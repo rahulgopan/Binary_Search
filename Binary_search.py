@@ -14,7 +14,6 @@ def Sandbox(Change) :
 
 TOTAL_ARGV = len(sys.argv)
 interrupt = 0
-output = commands.getoutput("/bin/bash setup.sh")
 print output
 if TOTAL_ARGV > 3 :
         LASTGOOD = sys.argv[2]
