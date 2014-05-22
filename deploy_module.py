@@ -28,7 +28,8 @@ def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                                 match = re.findall(r'\d+\.?\d+',line)
                                 floatlimit = [float(x) for x in match]
                         if "HIGHER_IS_BETTER" in line :
-                                match = re.search('(?<=HIGHER_IS_BETTER =) false',line)
+                                match = re.search('(?<=HIGHER_IS_BETTER = )\w+',line)
+                                HIB = match.group()
                 HOST = "root@%s" % IP
 
                 BUILD_PATH = '/perfauto1/builds/visor/%s/release' % BRANCH
