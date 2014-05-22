@@ -45,14 +45,14 @@ def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                                 TEST = TEST.strip()
                                 print TEST
                 for line in MAC_FILE :
-                if IP in line :
-                        line = line.split()
-                        MAC = line[2]
-                        print MAC
-                        LOCATION = line[5]
-                        print LOCATION
-                        PXE_DIRECTORY = line[4]
-                        print PXE_DIRECTORY
+                        if IP in line :
+                                line = line.split()
+                                MAC = line[2]
+                                print MAC
+                                LOCATION = line[5]
+                                print LOCATION
+                                PXE_DIRECTORY = line[4]
+                                print PXE_DIRECTORY
                 HOST = "root@%s" % IP
 
                 BUILD_PATH = '/perfauto1/builds/visor/%s/release' % BRANCH
