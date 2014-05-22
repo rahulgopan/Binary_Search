@@ -7,6 +7,7 @@ import time
 HOME = os.environ['HOME']
 def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                 CONFIG_FILE = open('BS.cfg','rU')
+                MAC_FILE = open('mac','rU')
                 for line in CONFIG_FILE :
                         if "PXEBENCH_SCRIPT" in line :
                                 pxe_match = re.search('(?<=PXEBENCH_SCRIPT = )\w+\w+.\w+',line)
@@ -43,10 +44,15 @@ def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                                 TEST = match.group()
                                 TEST = TEST.strip()
                                 print TEST
-                        if "PXE_DIRECTORY" in line :
-                                match = re.search('(?<=PXE_DIRECTORY = )\w+',line)
-                                PXE_DIRECTORY = match.group()
-                                print PXE_DIRECTORY
+                for line in MAC_FILE :
+                if IP in line :
+                        line = line.split()
+                        MAC = line[2]
+                        print MAC
+                        LOCATION = line[5]
+                        print LOCATION
+                        PXE_DIRECTORY = line[4]
+                        print PXE_DIRECTORY
                 HOST = "root@%s" % IP
 
                 BUILD_PATH = '/perfauto1/builds/visor/%s/release' % BRANCH
@@ -100,8 +106,8 @@ def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                                 Change_Unavailability = 0
                                 DEPLOY_CHANGE = OrderedChanges[i]
                                 print "Build %s will be deployed" % OrderedChanges[i]
-                                os.system('/home/performance/automation/eesx/scripts/deploy-visor-pxe.sh -s %s/visor-pxe-%s.tgz -d %s/nehlcurrentCS/ -k -r %s/devel-postboot-sh -v' % (BUILD_PATH,OrderedChanges[i],HOME,HOME))
-                                os.system('sudo -u performance ssh pxeuser@suite ./PXEconfig.pl -m 90:b1:1c:1f:0e:8c -p %s/nehlcurrentCS/ -l WDC' % HOME)
+                                os.system('/home/performance/automation/eesx/scripts/deploy-visor-pxe.sh -s %s/visor-pxe-%s.tgz -d %s/%s/ -k -r %s/devel-postboot-sh -v' % (BUILD_PATH,OrderedChanges[i],HOME,PXE_DIRECTORY,HOME))
+                                os.system('sudo -u performance ssh pxeuser@suite ./PXEconfig.pl -m %s -p %s/%s/ -l %s' % (MAC,HOME,PXE_DIRECTORY,LOCATION))
                                 print "Rebooting the machine"
                                 print "System is about to reboot now"
                                 reboot = subprocess.call(['ssh',HOST,'reboot'])
@@ -109,7 +115,7 @@ def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                                 ssh_status = 1
                                 while ssh_status > 0 :
                                         ssh_status,output = commands.getstatusoutput("ssh %s 'ls' > deleteme" % HOST)
-                                os.system("ssh %s 'cd /vmfs/volumes/datastore1/playground;./%s boothalt > deleteme;'" % (HOST,PXE_TEST))
+                                os.system("ssh %s 'cd /vmfs/volumes/datastore1/playground;./%s %s > deleteme;'" % (HOST,PXE_TEST,RUNLIST))
                                 status,results = commands.getstatusoutput("scp -r root@%s:/vmfs/volumes/datastore1/playground/benchdata %s/scripts/BS/tmp" % (IP,HOME))
                                 print "Done with the testing"
                                 print "Results displayed below"
