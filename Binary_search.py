@@ -14,7 +14,6 @@ def Sandbox(Change) :
 
 TOTAL_ARGV = len(sys.argv)
 interrupt = 0
-print output
 if TOTAL_ARGV > 3 :
         LASTGOOD = sys.argv[2]
         LASTBAD = sys.argv[3]
