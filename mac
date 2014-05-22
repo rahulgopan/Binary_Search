@@ -1,0 +1,5 @@
+Dell Intel           90:b1:1c:1f:0e:8c w1-pamo-nehl    nehlcurrentCS  WDC         10.133.208.15  pCAT              (triaging testbed)
+HP   Intel           d4:85:64:4a:a5:2c w1-pamo-nehi    nehicurrentCS  WDC         10.133.208.12                    (triaging testbed)
+Dell Quad-core-AMD   00:1e:c9:b1:9c:a3 perf-horoz      horozcurrentCS OSDC        10.17.60.29    shanghai-monitor  (triaging testbed)    Note: we can use this for magny-cours as well
+Dell Quad-Core-AMD   d4:ae:52:e9:13:90 w1-pamo-abub    abubcurrentCS  WDC         10.133.208.20  Abu Dhabi (triaging testbed)
+HP   Intel-8x-Xeon   6c:3b:e5:a5:c0:08 w1-parm-wesd    wesdcurrentCS  WDC                        RM-CPU
