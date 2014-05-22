@@ -6,7 +6,7 @@ import os
 import time
 HOME = os.environ['HOME']
 def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
-                CONFIG_FILE = open('BS.cfg','rU')
+                CONFIG_FILE = open('Binary_search.cfg','rU')
                 MAC_FILE = open('mac','rU')
                 for line in CONFIG_FILE :
                         if "PXEBENCH_SCRIPT" in line :
