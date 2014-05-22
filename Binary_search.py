@@ -51,4 +51,4 @@ if TOTAL_ARGV > 3 :
                                 print colored('The problem Change-set might be %s','red') % LASTBAD
                                 sys.exit()
 else :
-        print "Usage : python BS.py <branch_name> <BeginCS> <EndCS> "
+        print "Usage : python Binary_Search.py <branch_name> <BeginCS> <EndCS> "
