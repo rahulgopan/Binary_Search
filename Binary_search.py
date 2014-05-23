@@ -18,8 +18,6 @@ if TOTAL_ARGV > 3 :
         LASTGOOD = sys.argv[2]
         LASTBAD = sys.argv[3]
         result = deploy_best_available_CN(sys.argv[1],LASTGOOD,LASTBAD)
-        #print result[0]
-        #print result[1]
         while interrupt == 0:
                 if result[1] == 9:
                         print "Sandbox function called"
@@ -28,7 +26,6 @@ if TOTAL_ARGV > 3 :
                 elif result[1] == 1:
                         LASTGOOD = result[0]
                         No_of_changes = commands.getoutput('/exit14/home/performance/src/automation/bin/p4range -b %s -B %s -E %s | wc -l' % (sys.argv[1],LASTGOOD,LASTBAD))
-                        #print "Test : %s " % No_of_changes
                         if int(No_of_changes) > 2:
                                 result = deploy_best_available_CN(sys.argv[1],LASTGOOD,LASTBAD)
                                 print result
@@ -40,12 +37,10 @@ if TOTAL_ARGV > 3 :
                         LASTBAD = result[0]
                         No_of_changes = commands.getoutput('/exit14/home/performance/src/automation/bin/p4range -b %s -B %s -E %s | wc -l' % (sys.argv[1],LASTGOOD,LASTBAD))
                         if int(No_of_changes) > 2:
-                                #print "Control is outside where i guess"
                                 result = deploy_best_available_CN(sys.argv[1],LASTGOOD,LASTBAD)
                                 print result
                         else:
                                 print "Not enough changes in between"
-#                               print "The problem Change-set might be %s" % LASTBAD
                                 print colored('The problem Change-set might be %s','red') % LASTBAD
                                 sys.exit()
 else :
