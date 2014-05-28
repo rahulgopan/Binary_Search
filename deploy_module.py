@@ -12,9 +12,6 @@ def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                 MAC_FILE = open('mac','rU')
                 log.info('Using Binary_search.cfg file to get neccessary inputs')
                 for line in CONFIG_FILE :
-                        if "PXEBENCH_SCRIPT" in line :
-                                pxe_match = re.search('(?<=PXEBENCH_SCRIPT = )\w+\w+.\w+',line)
-                                PXE_TEST = pxe_match.group()
                         if "RESULT_HowTo" in line :
                                 res_match = re.search('(?<=RESULT_HowTo = )\d',line)
                                 print "RESULT_HowTo=%s" % res_match.group()
@@ -140,7 +137,7 @@ def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                                 while ssh_status > 0 :
                                         ssh_status,output = commands.getstatusoutput("ssh %s 'ls' > deleteme" % HOST)
                                 log.info('Machine is UP with the build %s' % OrderedChanges[i])
-                                os.system("ssh %s 'cd /vmfs/volumes/datastore1/playground;./%s %s > deleteme;'" % (HOST,PXE_TEST,RUNLIST))
+                                os.system("ssh %s 'cd /vmfs/volumes/datastore1/playground;./pxebench.sh %s > deleteme;'" % (HOST,RUNLIST))
                                 status,results = commands.getstatusoutput("scp -r root@%s:/vmfs/volumes/datastore1/playground/benchdata %s/scripts/BS/tmp" % (IP,HOME))
                                 print "Done with the testing"
                                 print "Results displayed below"
@@ -175,7 +172,7 @@ def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                                 log.info('Deployed change-set %s is good' % DEPLOY_CHANGE)
                                 GOODNESS = 1
                         else :
-                                print "Deployed change-set is a bad one %s" % DEPLOY_CHANGiE
+                                print "Deployed change-set is a bad one %s" % DEPLOY_CHANGE
                                 log.info('Deployed change-set %s is bad' % DEPLOY_CHANGE)
                                 GOODNESS = 0
                         return (DEPLOY_CHANGE,GOODNESS)
