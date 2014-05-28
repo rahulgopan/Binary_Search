@@ -8,6 +8,7 @@ import subprocess
 import re
 from deploy_module import deploy_best_available_CN
 from color import colored
+import log
 def Sandbox(Change) :
         #/exit14/home/performance/src/automation/bin/sandbox-bld-req -T server -b vmcore-main -n Change -t release -N
         print "Done with sandbox request"
@@ -31,7 +32,9 @@ if TOTAL_ARGV > 3 :
                                 print result
                         else:
                                 print "Not enough changes in between"
+                                log.info('No changes in between the Good %s and Bad number %s' % (LASTGOOD,LASTBAD))
                                 print colored('The problem Change-set might be %s','red') % LASTBAD
+                                log.info('The problem Change-set might be %s' % LASTBAD)
                                 sys.exit()
                 else:
                         LASTBAD = result[0]
@@ -41,7 +44,9 @@ if TOTAL_ARGV > 3 :
                                 print result
                         else:
                                 print "Not enough changes in between"
+                                log.info('No changes in between the Good %s and Bad number %s' % (LASTGOOD,LASTBAD))
                                 print colored('The problem Change-set might be %s','red') % LASTBAD
+                                log.info('The problem Change-set might be %s' % LASTBAD)
                                 sys.exit()
 else :
         print "Usage : python Binary_Search.py <branch_name> <BeginCS> <EndCS> "
