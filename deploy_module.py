@@ -6,12 +6,21 @@ import os
 import time
 import log
 HOME = os.environ['HOME']
+PWD = os.environ['PWD']
 def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                 log.info('Function \"deploy_best_available_CN\" called with arguments BRANCH=%s,GOOD_CN=%s,BAD_CN=%s' % (BRANCH,BEGINCS,ENDCS))
                 CONFIG_FILE = open('Binary_search.cfg','rU')
                 MAC_FILE = open('mac','rU')
                 log.info('Using Binary_search.cfg file to get neccessary inputs')
                 for line in CONFIG_FILE :
+                        if "PXEBENCH_SCRIPT" in line :
+                                pxe_match = re.search('(?<=PXEBENCH_SCRIPT = )[\w+\W+]+',line)
+                                PXE_TEST = pxe_match.group()
+                                PXE_TEST = PXE_TEST.strip()
+                                print "PXEBENCH_SCRIPT=%s" % PXE_TEST
+                                log.info('PXEBENCH_SCRIPT=%s' % PXE_TEST)
+                                PXEBENCH_DIR = os.path.dirname("%s" % PXE_TEST)
+                                PXEBENCH_FILE = os.path.basename("%s" % PXE_TEST)
                         if "RESULT_HowTo" in line :
                                 res_match = re.search('(?<=RESULT_HowTo = )\d',line)
                                 print "RESULT_HowTo=%s" % res_match.group()
@@ -44,8 +53,9 @@ def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                                 print "Range is %s - %s" % (NOISE_VALUE_BEGIN,NOISE_VALUE_END)
                                 log.info('Range=%s - %s' % (NOISE_VALUE_BEGIN,NOISE_VALUE_END))
                         if "RUNLIST" in line :
-                                match = re.search('(?<=RUNLIST = )\w+',line)
+                                match = re.search('(?<=RUNLIST = )[\w+\W+]+',line)
                                 RUNLIST = match.group()
+                                RUNLIST = RUNLIST.strip()
                                 print "RUNLIST=%s" % RUNLIST
                                 log.info('RUNLIST=%s' % RUNLIST)
                         if "TEST" in line :
@@ -137,16 +147,16 @@ def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                                 while ssh_status > 0 :
                                         ssh_status,output = commands.getstatusoutput("ssh %s 'ls' > deleteme" % HOST)
                                 log.info('Machine is UP with the build %s' % OrderedChanges[i])
-                                os.system("ssh %s 'cd /vmfs/volumes/datastore1/playground;./pxebench.sh %s > deleteme;'" % (HOST,RUNLIST))
-                                status,results = commands.getstatusoutput("scp -r root@%s:/vmfs/volumes/datastore1/playground/benchdata %s/scripts/BS/tmp" % (IP,HOME))
+                                os.system("ssh %s 'cd %s;./%s %s > deleteme;'" % (HOST,PXEBENCH_DIR,PXEBENCH_FILE,RUNLIST))
+                                status,results = commands.getstatusoutput("scp -r root@%s:/vmfs/volumes/datastore1/playground/benchdata %s/tmp" % (IP,PWD))
                                 print "Done with the testing"
                                 print "Results displayed below"
                                 if int(res_match.group()) == 1 :
-                                        os.system("perl %s/get-scores.pl -i %s/scripts/BS/tmp/benchdata/boothalt_rhel6.1server_64_hwexec_swmmu_32vcpu_256gb -n boothalt_rhel6.1server_64_hwexec_swmmu_32vcpu_256gb -b -a > %s/scripts/BS/tmp/BStest" % (HOME,HOME,HOME))
-                                        status,output = commands.getstatusoutput("cat %s/scripts/BS/tmp/BStest" % HOME)
+                                        os.system("perl %s/get-scores.pl -i %s/tmp/benchdata/%s -n %s -b -a > %s/tmp/out" % (PWD,PWD,TEST,TEST,PWD))
+                                        status,output = commands.getstatusoutput("cat %s/tmp/out" % PWD)
                                 else :
-                                        status,output = commands.getstatusoutput("ssh root@%s 'cd /vmfs/volumes/datastore1/playground;grep -i vmqa benchdata/boothalt_rhel6.1server_64_hwexec_swmmu_32vcpu_256gb;exit;'" % IP)
-                                output = commands.getoutput("cat %s/scripts/BS/tmp/BStest | awk {'print $3'}" % HOME)
+                                        status,output = commands.getstatusoutput("ssh root@%s 'cd /vmfs/volumes/datastore1/playground;grep -i vmqa benchdata/%s;exit;'" % (IP,TEST))
+                                output = commands.getoutput("cat %s/tmp/out | awk {'print $3'}" % PWD)
                                 print output
                                 log.info('Calculating the mean from the results')
                                 numalone = re.findall(r'\d+\.?\d+', output)
