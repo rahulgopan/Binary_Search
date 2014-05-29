@@ -1,0 +1,11 @@
+# This is the configuration file required for the binary search test
+
+LIMIT = 800000.0
+HIGHER_IS_BETTER = true
+PXEBENCH_SCRIPT = /vmfs/volumes/datastore1/playground/pxebench.sh
+NOISY = 0
+NOISE_RANGE = 8 - 10
+MACHINE_IP = 10.133.208.15
+RUNLIST = /vmfs/volumes/datastore1/playground/specjbb.rl
+TEST = specjbb2005_rhel6.1server_64_hwexec_swmmu_32vcpu_256gb
+RESULT_HowTo = perl get-scores.pl -i benchdata/specjbb2005_rhel6.1server_64_hwexec_swmmu_32vcpu_256gb -n specjbb2005_rhel6.1server_64_hwexec_swmmu_32vcpu_256gb -a
