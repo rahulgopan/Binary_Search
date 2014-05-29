@@ -21,8 +21,9 @@ if TOTAL_ARGV > 3 :
         result = deploy_best_available_CN(sys.argv[1],LASTGOOD,LASTBAD)
         while interrupt == 0:
                 if result[1] == 9:
-                        print "Sandbox function called"
-                        Sandbox(result[0])
+                        #print "Sandbox function called"
+                        #Sandbox(result[0])
+                        log.info('Provide sandbox request for %s' % result[0])
                         sys.exit()
                 elif result[1] == 1:
                         LASTGOOD = result[0]
