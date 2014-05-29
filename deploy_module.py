@@ -12,6 +12,7 @@ def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                 CONFIG_FILE = open('Binary_search.cfg','rU')
                 MAC_FILE = open('mac','rU')
                 log.info('Using Binary_search.cfg file to get neccessary inputs')
+                ENTRY = 1
                 for line in CONFIG_FILE :
                         if "PXEBENCH_SCRIPT" in line :
                                 pxe_match = re.search('(?<=PXEBENCH_SCRIPT = )[\w+\W+]+',line)
@@ -22,9 +23,11 @@ def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                                 PXEBENCH_DIR = os.path.dirname("%s" % PXE_TEST)
                                 PXEBENCH_FILE = os.path.basename("%s" % PXE_TEST)
                         if "RESULT_HowTo" in line :
-                                res_match = re.search('(?<=RESULT_HowTo = )\d',line)
-                                print "RESULT_HowTo=%s" % res_match.group()
-                                log.info('RESULT_HowTo=%s' % res_match.group())
+                                res_match = re.search('(?<=RESULT_HowTo = )[\w+\W+]+',line)
+                                RESULT_HowTo = res_match.group()
+                                RESULT_HowTo = RESULT_HowTo.strip()
+                                print "RESULT_HowTo=%s" % RESULT_HowTo
+                                log.info('RESULT_HowTo=%s' % RESULT_HowTo)
                         if "MACHINE_IP" in line :
                                 ip_match = re.search('(?<=MACHINE_IP = )[\d+\.]+',line)
                                 IP = ip_match.group()
@@ -66,16 +69,20 @@ def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                                 log.info('TEST=%s' % TEST)
                 for line in MAC_FILE :
                         if IP in line :
+                                ENTRY = 0
                                 line = line.split()
-                                MAC = line[2]
+                                MAC = line[0]
                                 print "MAC ADDR=%s" % MAC
                                 log.info('MAC ADDRESS=%s' % MAC)
-                                LOCATION = line[5]
+                                LOCATION = line[3]
                                 print "TESTBED LOCATION=%s" % LOCATION
                                 log.info('TESTBED LOCATION=%s' % LOCATION)
-                                PXE_DIRECTORY = line[4]
+                                PXE_DIRECTORY = line[2]
                                 print "PXE_DIRECTORY=%s" % PXE_DIRECTORY
                                 log.info('PXE_DIRECTORY=%s' % PXE_DIRECTORY)
+                if ENTRY !=0 :
+                        print "Entries for the given IP from cfg file are not available in mac file. Run mac-setup.py to add new test bed data"
+                        sys.exit()
                 HOST = "root@%s" % IP
 
                 BUILD_PATH = '/perfauto1/builds/visor/%s/release' % BRANCH
@@ -88,7 +95,7 @@ def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                 log.info('Changes are %s' % CS)
                 HalfAChange = int(NOofChanges) / 2
                 Mid_Change = CS[int(HalfAChange)]
-                print "Probable middle change : %s" %Mid_Change
+                #print "Probable middle change : %s" %Mid_Change
                 log.info('Middle Change=%s' % Mid_Change)
                 status,output = commands.getstatusoutput('ls %s/visor-pxe-%s.tgz' % (BUILD_PATH,Mid_Change))
                 i = 1
@@ -129,18 +136,23 @@ def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                 for i in xrange(int(NOofChanges)) :
                         status,output = commands.getstatusoutput('ls %s/visor-pxe-%s.tgz' % (BUILD_PATH,OrderedChanges[i]))
                         #print "Availability of change %s is %s" % (OrderedChanges[i],status)
-                        log.info('Availability of change %s is %s' % (OrderedChanges[i],status))
+                        if status == 0 :
+                                print "Change %s is available" % OrderedChanges[i]
+                                log.info('Change %s is available' % OrderedChanges[i])
+                        else :
+                                log.info('Change %s not available' % OrderedChanges[i])
+                        #log.info('Availability of change %s is %s' % (OrderedChanges[i],status))
                         Change_Unavailability = 1
                         if status == 0 and OrderedChanges[i] != BEGINCS and OrderedChanges[i] != ENDCS :
                                 Change_Unavailability = 0
                                 DEPLOY_CHANGE = OrderedChanges[i]
                                 print "Deploying build %s" % OrderedChanges[i]
-                                log.info('Build %s will be deployed' % OrderedChanges[i])
+                                log.info('Deploying build %s' % OrderedChanges[i])
                                 os.system('/home/performance/automation/eesx/scripts/deploy-visor-pxe.sh -s %s/visor-pxe-%s.tgz -d %s/%s/ -k -r %s/devel-postboot-sh -v' % (BUILD_PATH,OrderedChanges[i],HOME,PXE_DIRECTORY,HOME))
                                 os.system('sudo -u performance ssh pxeuser@suite ./PXEconfig.pl -m %s -p %s/%s/ -l %s' % (MAC,HOME,PXE_DIRECTORY,LOCATION))
                                 print "Rebooting the machine"
                                 print "System is about to reboot now"
-                                log.info('Machine is about to reboot')
+                                log.info('Rebooting the Machine')
                                 reboot = subprocess.call(['ssh',HOST,'reboot'])
                                 time.sleep(300)
                                 ssh_status = 1
@@ -151,11 +163,8 @@ def deploy_best_available_CN(BRANCH,BEGINCS,ENDCS) :
                                 status,results = commands.getstatusoutput("scp -r root@%s:/vmfs/volumes/datastore1/playground/benchdata %s/tmp" % (IP,PWD))
                                 print "Done with the testing"
                                 print "Results displayed below"
-                                if int(res_match.group()) == 1 :
-                                        os.system("perl %s/get-scores.pl -i %s/tmp/benchdata/%s -n %s -b -a > %s/tmp/out" % (PWD,PWD,TEST,TEST,PWD))
-                                        status,output = commands.getstatusoutput("cat %s/tmp/out" % PWD)
-                                else :
-                                        status,output = commands.getstatusoutput("ssh root@%s 'cd /vmfs/volumes/datastore1/playground;grep -i vmqa benchdata/%s;exit;'" % (IP,TEST))
+                                os.system("cd tmp;%s > out;cd .." % (RESULT_HowTo))
+                                status,output = commands.getstatusoutput("cat %s/tmp/out" % PWD)
                                 output = commands.getoutput("cat %s/tmp/out | awk {'print $3'}" % PWD)
                                 print output
                                 log.info('Calculating the mean from the results')
